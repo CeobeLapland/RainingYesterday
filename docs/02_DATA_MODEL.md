@@ -1,12 +1,13 @@
 # 02 · 数据模型
 
-数据分三类，先分清再谈 schema：
+数据分三类，先分清再谈 schema（另有第四种来源——真实信号，见 2.12）：
 
 | 类别 | 形态 | 生命周期 | 载体 |
 | --- | --- | --- | --- |
 | 世界内容 | 静态 | 随包发布 / 可热更新 | JSON 文件 |
 | 玩家存档 | 动态 | 随游戏推进变化 | Room |
 | 运行时状态 | 内存 | 从内容 + 存档 + 时钟推导 | 领域层对象 |
+| 真实信号 | 外部 / 实时 | 实时获取 / 可本地模拟 | 外部 API + 本地兜底 + 内存缓存 |
 
 ## 1. 通用条件 Condition
 
@@ -56,7 +57,12 @@
   "resources": ["rain_mushroom"], // 可采集资源 item id
   "linked_npcs": ["guard_li"],
   "linked_rumors": ["gym_night_sound"],
-  "tags": ["深夜", "怀旧"]
+  "tags": ["深夜", "怀旧"],
+  "ar": {
+    "asset": "old_hall_past",
+    "anchor_mode": "device_relative",
+    "billboard": true
+  }
 }
 ```
 
@@ -77,7 +83,8 @@
     { "min_familiarity": 3, "lines": ["你知道这片操场以前是什么吗？"] }
   ],
   "gifts": { "liked": ["tea"], "disliked": ["junk"] },
-  "api": { "enabled": false, "base_url": "", "model": "" }
+  "api": { "enabled": false, "base_url": "", "model": "" },
+  "ar": { "asset": "npc_guard_li", "anchor_mode": "geo_anchor", "lat": 31.2000, "lng": 121.4000 }
 }
 ```
 
@@ -125,7 +132,8 @@
     { "kind": "weather", "value": "rain" },
     { "kind": "time_range", "value": { "from": "18:00", "to": "23:00" } }
   ],
-  "used_in": ["mushroom_brew"]
+  "used_in": ["mushroom_brew"],
+  "ar": {}
 }
 ```
 
@@ -173,7 +181,8 @@
     { "kind": "near", "value": { "place": "gym", "radius_m": 120 } }
   ],
   "resolve": "anomaly:gym_night_sound",
-  "may_fail": true
+  "may_fail": true,
+  "evidence": "gym_night_sound_photo"
 }
 ```
 
@@ -189,15 +198,80 @@
   "files": {
     "places": "places.json",
     "npcs": "npcs.json",
+    "creatures": "creatures.json",
     "tasks": "tasks.json",
     "items": "items.json",
     "recipes": "recipes.json",
     "events": "events.json",
     "rumors": "rumors.json",
+    "rituals": "rituals.json",
     "festivals": "festivals.json"
   }
 }
 ```
+
+### 2.9 生灵 creature
+
+GDD 7.11 宠物/友善生灵的世界内容侧（校园里可发现/领养的生灵清单）。玩家领养后的养成状态存 Room `PetState`（见 §3），不复制内容字段。
+
+```jsonc
+{
+  "id": "campus_cat",
+  "name": "橘猫",
+  "species": "cat",                     // cat | bird | squirrel | ...
+  "home_places": ["library", "canteen"],
+  "rarity": "uncommon",                 // 见枚举 Rarity
+  "found_condition": [                  // 出现条件，复用 Condition
+    { "kind": "time_range", "value": { "from": "17:00", "to": "19:00" } }
+  ],
+  "gifts": { "liked": ["dried_fish"] },
+  "ar": { "asset": "creature_cat", "anchor_mode": "device_relative", "billboard": true }
+}
+```
+
+### 2.10 地点微仪式 ritual
+
+GDD 7.30 地点微仪式的数据落地：玩家主动触发的地点级轻事件，产出记忆节点/足迹/图鉴，不做数值膨胀。
+
+```jsonc
+{
+  "id": "sit_by_lake",
+  "name": "在湖边坐一会儿",
+  "place": "lake_side",
+  "action": "sit",                       // sit | photo | watch | pick | ...
+  "cooldown_days": 0,                    // 0 = 一次性
+  "effects": [
+    { "kind": "create_memory", "text": "在湖边坐了一会儿。" },
+    { "kind": "gain_item", "item": "ginkgo_leaf", "count": 1 }
+  ]
+}
+```
+
+### 2.11 AR 通用字段（P2 占位）
+
+`ar` 是可选对象，出现在 `place` / `npc` / `item` / `creature` 上，缺省即不进 AR 渲染。MVP 只解析、不渲染。
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `asset` | string | 虚拟物资源 id（2D 贴片或低模 3D 占位） |
+| `anchor_mode` | string | `geo_anchor`（锚定真实经纬度，需 `lat`/`lng`）或 `device_relative`（相对设备摆放，会漂移） |
+| `lat` / `lng` | number \| null | `anchor_mode=geo_anchor` 时必填 |
+| `scale` | number | 缩放，默认 1.0 |
+| `billboard` | bool | true=面向相机的 2D 贴片；false=低模 3D |
+
+P2 实现时把 `anchor_mode` 落成 Kotlin 枚举（`ArAnchorMode`，见 §5），在此之前解析层用字符串接收即可，不硬编码魔法值到领域层。
+
+### 2.12 真实信号（外部源，非 JSON 内容）
+
+真实天气 / 季节日照 / 校园动态是"外部信号"，不进世界内容 JSON，也不进 Room 存档，由领域层通过 `SignalSource` 接口读取（真实实现或本地模拟实现）。此处只约定数据形状：
+
+```text
+WeatherSignal    { code: sunny|cloudy|rain|snow }        // 对齐枚举 Weather
+DaylightSignal   { sunrise: "HH:mm", sunset: "HH:mm" }
+CampusSignal     { events: [ { id, text, place? } ] }    // 校园动态，可人工维护兜底
+```
+
+外部获取失败由数据层降级到本地模拟，绝不中断游戏（见 `03` §6）。
 
 ## 3. 玩家存档 Room 实体
 
@@ -221,13 +295,13 @@
 ## 4. 运行时状态（领域层对象）
 
 ```text
-WorldState   { time, weather, season, date }
-DerivedState { visibleEvents, activeRumors, npcPositions, spawnables }  // 触发引擎算出的"当前世界"
+WorldState   { time, weather, season, date, daylight }        // daylight 来自真实信号
+DerivedState { visibleEvents, activeRumors, npcPositions, spawnables, availableRituals, arVisible }  // 触发引擎算出的"当前世界"
 GameState    { WorldState + PlayerProfile + 图鉴 + 关系 + 存档聚合 }
 UiState      { 每屏一个，Project 自 GameState 的只读快照 }
 ```
 
-`DerivedState` 由触发引擎基于 WorldState + PlayerProfile 动态计算，每次世界状态变化重算一次。
+`DerivedState` 由触发引擎基于 WorldState + PlayerProfile + 真实信号动态计算，每次世界状态变化重算一次。`availableRituals` 是当前地点可执行的微仪式；`arVisible` 是按地点与条件筛出的"该处应出现的虚拟物"（P2 才渲染，MVP 只算不展示）。
 
 ## 5. 枚举
 
@@ -240,3 +314,4 @@ UiState      { 每屏一个，Project 自 GameState 的只读快照 }
 | EventTier | common, uncommon, rare, epic, mystic |
 | Weather | sunny, cloudy, rain, snow |
 | Season | spring, summer, autumn, winter |
+| ArAnchorMode | geo_anchor, device_relative |

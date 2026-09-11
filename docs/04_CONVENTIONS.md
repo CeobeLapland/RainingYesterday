@@ -77,6 +77,7 @@ interface ContentRepository {
 
 - 一律用 `02` 的 schema；新增字段先改 `02` 再改代码，`ignoreUnknownKeys=true` 保证兼容。
 - 解析出的模型对象与 Runtime 校验分离：内容载入后做一次**合法性校验**（id 唯一、类型合法、引用存在），坏数据在启动时显式报错，不默默吞掉。
+- 可选字段（尤其 `ar`）一律给默认值、缺失即跳过；`ar` 字段缺失的条目绝不进入 AR 渲染。
 
 ### 4.3 Room
 
@@ -112,3 +113,5 @@ interface ContentRepository {
 | UI 直接改 `GameState` | 破坏单向数据流 |
 | JSON 字段用中文 key / 大驼峰 | 解析与可读性成本 |
 | 为"将来可能"引入抽象层 | 违背"克制"原则，见 `00` |
+| 领域层 import ARCore / CameraX / 传感器 | AR/相机只能进表现层，领域层保持纯 Kotlin |
+| 引入通用图像识别模型 | 实拍识别只做对已知条目的本地匹配，超第一版范围 |

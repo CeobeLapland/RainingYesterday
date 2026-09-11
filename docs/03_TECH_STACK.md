@@ -14,10 +14,11 @@
 | 内容存储 | JSON 文件 + kotlinx.serialization | 数据驱动，跨端复用 |
 | 地图 | osmdroid（主）+ MapLibre（备选） | 开源瓦片、免 key、离线友好 |
 | 定位 | Google FusedLocation / Android Location | 可配置精度与频率 |
-| 相机/图片 | CameraX + Photo Picker | 记忆节点与图鉴存图 |
+| 相机/图片 | CameraX + Photo Picker | 记忆节点存图 + 实拍识别（实时预览，需 CAMERA 权限） |
 | 图片加载 | Coil | Compose 原生支持 |
 | 网络（后补） | Retrofit + OkHttp | REST 轻社交、云存档 |
-| 天气/LLM | 可选外部 API（可配置，默认关） | 不卡 MVP，留扩展位 |
+| 真实信号 | 可选外部源 + 本地模拟兜底 | 真实天气/季节/校园信号（默认可关） |
+| AR（P2） | ARCore 主验证 + CameraX/IMU 兜底 | MVP 不引入，后期"AR 观察窗"验证 |
 | 测试 | JUnit + kotlinx-coroutines-test + Turbine | 领域层纯 Kotlin 可测 |
 
 ## 2. 语言与平台
@@ -66,6 +67,11 @@ camera-core / camera-camera2 / camera-lifecycle / camera-view
 retrofit = "2.x"
 okhttp = "4.x"
 
+# 真实信号（可选，默认本地模拟；数据源由 SignalSource 封装，不锁定供应商）
+# 走 retrofit，无需额外依赖
+
+# AR（P2 占位，MVP 不引入；arcore-core / sceneview 待验证阶段再定）
+
 # 测试
 junit / kotlinx-coroutines-test / turbine / compose-ui-test
 ```
@@ -100,6 +106,17 @@ PlayerSettings.locationMode:
 
 定位频率、最小位移、精度优先级全部进 `PlayerSettings`，与功耗直接挂钩，做成可配置项而非硬编码。
 
+### 4.4 AR 双轨（P2，MVP 只留接口不引入 SDK）
+
+GDD v2 决定两条路线都验证，不因演示限制而只走低配：
+
+| 路线 | 能力 | 代价 | 结论 |
+| --- | --- | --- | --- |
+| **ARCore** | 平面检测、设备相对锚点、光照估计 | 依赖 Google Play Services for AR + 设备白名单 | 主验证 |
+| **CameraX + IMU 伪 AR** | 相机预览 + 陀螺仪/磁力计 + 透视投影叠加 | 无平面检测、无稳定锚点、会漂移 | 兜底验证，用 2D billboard 补偿 |
+
+两条路线本质都只改表现层视图，共享同一份 `DerivedState.arVisible` 输入（`01` §4.3）。后期各做一个"AR 观察窗"最小验证点，实测设备覆盖与漂移后再定主方案。**MVP 阶段不添加 AR 依赖。**
+
 ## 5. 内容层：JSON 的解析约定
 
 - 用 **kotlinx.serialization** 解析 `02_DATA_MODEL.md` 里的全部 JSON。
@@ -108,15 +125,17 @@ PlayerSettings.locationMode:
 - 内容文件放 `assets/content/<theme_id>/`，随包发布；`ContentRepository` 首次启动解析并缓存到内存。
 - 热更新（后补）：从远端拉新 JSON 覆盖缓存，签名校验后再生效。
 
-## 6. 天气与 LLM API（可选，默认关闭）
+## 6. 真实信号与 LLM API（可选，默认关闭）
 
 | 能力 | 默认 | 说明 |
 | --- | --- | --- |
-| 天气 | **本地模拟** | 按季节 + 随机生成，不依赖外部付费 API；`WeatherSource` 接口留好，将来可接真实天气 |
+| 真实天气 | **本地模拟兜底** | 优先接真实天气（`SignalSource`/`WeatherSource` 真实实现），失败降级到按季节 + 随机生成 |
+| 季节日照 | **本地推算** | 日出日落按真实日期/纬度本地计算，无需外部 API |
+| 校园信号 | **人工配置兜底** | 社团/档口/施工等动态，第一版人工维护配置注入，接口留好 |
 | NPC LLM | **预设对话兜底** | `npc.api` 默认 `enabled:false`；玩家填入 key 后才走外部接口，同一 schema 双轨 |
 | 轻社交后端 | **关闭** | `PlayerSettings.showOthers=false` 时完全本地，无任何网络请求 |
 
-这类外部能力都遵循同一原则：**先做本地可玩的兜底，外部 API 是可选的增强通道**，避免课设被第三方 key / 配额卡死。
+这类外部能力都遵循同一原则：**先做本地可玩的兜底，外部源是可选增强通道（真实优先、模拟兜底）**，避免课设被第三方 key / 配额卡死。
 
 ## 7. 测试
 
@@ -133,7 +152,7 @@ PlayerSettings.locationMode:
 | `ACCESS_BACKGROUND_LOCATION` | 后台轨迹 | 仅 `locationMode=background` 且用户主动开启时才请求 |
 | `INTERNET` | 瓦片 / 热更新 / 可选 API | 通用 |
 | `ACCESS_NETWORK_STATE` | 判断瓦片是否可下载 | 通用 |
-| `CAMERA`（或直接用系统拍照/相册） | 记忆节点照片 | 优先 Photo Picker，避免单独 CAMERA 权限 |
+| `CAMERA` | 实拍识别实时预览 | 实拍识别（GDD 7.29）需 CameraX 实时预览，运行时请求；仅存照片仍用 Photo Picker 免此权限 |
 | 存储 | 无 | 照片存应用私有目录，用 Photo Picker 选图 |
 
 ## 9. 构建与仓库结构约定
@@ -158,7 +177,9 @@ app/src/main/assets/content/  # 世界内容 JSON（theme 包）
 | 地图 | osmdroid（WGS84、免 key、可离线）主选 |
 | 叠加层 | Compose Canvas 自绘，不绑地图 SDK |
 | 定位 | 玩家可配置三档，默认前台 |
-| 天气 | 本地模拟兜底 + WeatherSource 接口 |
+| 天气 | 真实优先 + 本地模拟兜底，SignalSource 接口 |
+| 实拍识别 | CameraX 实时预览 + 已知条目本地匹配，不做通用识别 |
+| AR | ARCore 主验证 + CameraX/IMU 兜底，MVP 不引入依赖 |
 | NPC LLM | 可选、默认关、双轨兜底 |
 | 网络 | Retrofit 后补，MVP 阶段无强制联网 |
 | 测试重点 | 领域引擎纯 Kotlin 单测优先 |
