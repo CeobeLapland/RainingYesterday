@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 色值对齐 docs/06_ART_AND_AUDIO.md §4 -->
+    <color name="paper">#FCF9F3</color>
+    <color name="deep_background">#2E3640</color>
+    <color name="ic_launcher_background">#F2C14E</color>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 深色启动主题：06 §7 深层基调，避免暗色下白屏闪烁 -->
+    <style name="Theme.RainingYesterday" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/deep_background</item>
+    </style>
+</resources>
