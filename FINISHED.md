@@ -2,6 +2,14 @@
 
 按里程碑追加，最近在顶部。详细计划见 `docs/05_ROADMAP.md`（正式范围以 `GDD_v2.md` 为准）。
 
+## M2 · 领域引擎核心（完成）
+
+- `domain/model`：`WorldState`（time/date/weather/season/daylight/campusEvents + 夜间/深层推断）、`PlayerProgress`（探索度/关系/持有物/位置）、`Daylight`。
+- `domain/engine/ConditionEvaluator`：全部 10 种 Condition kind（time_range 含跨午夜、weather、season、near haversine 距离、exploration、relationship、has_item、day_of_week、date）+ all/any 递归嵌套求值。
+- `domain/engine/WorldStateMachine`：时钟源（`WorldClock` 可注入固定时间）、`update`/`setState` 入口、季节本地推算、深层状态推断。
+- `domain/engine/TriggerEngine`：由 ContentRepository + WorldState + PlayerProgress 算出 `DerivedState`（visibleEvents / activeRumors / npcPositions / spawnables / availableAnomalies / availableRituals / pendingEffects / arVisible [MVP 只算不渲染]）。传闻/异常/NPC 作息/稀有资源/微仪式/事件统一驱动。
+- 验证：`testDebugUnitTest` 16/16 通过（M1 5 + M2 11，覆盖各 kind、组合嵌套、天气/探索度/位置变化引起 DerivedState 变化）；`assembleDebug` 通过。
+
 ## M1 · 内容数据管线（完成）
 
 - `domain/model` 全部内容类型落成 Kotlin：Place/Npc/Task/Item/Recipe/RandomEvent/Rumor/Theme/Creature/Ritual/Festival/Tool + ArSpec + 真实信号 Signals + 枚举全集。
