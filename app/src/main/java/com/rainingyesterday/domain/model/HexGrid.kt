@@ -74,17 +74,61 @@ object HexGrid {
         return Axial(q, r)
     }
 
-    /** string key -> 世界经纬度（近似：把格子中心当作锚点偏移，供迷雾层对齐底图）。 */
-    fun axialToLatLng(c: Axial, originLatLng: Pair<Double, Double>, gridSideMeters: Double): Pair<Double, Double> {
-        // 每度纬度近似 111320 米；经度随纬度缩放。这里做粗略近似，精度要求不高（迷雾层）。
-        val (originLat, originLng) = originLatLng
-        val latPerMeter = 1.0 / 111320.0
-        val lngPerMeter = 1.0 / (111320.0 * kotlin.math.cos(Math.toRadians(originLat)).coerceAtLeast(0.01))
-        // 轴向 q 沿水平、r 沿斜向，逐像素近似即可
-        val xMeters = gridSideMeters * (c.q * sqrt(3.0)) / 1.0
-        val yMeters = gridSideMeters * (c.r * 3.0 / 2.0)
-        return (originLat - latPerMeter * yMeters) to (originLng + lngPerMeter * xMeters)
+    /**
+     * 轴向坐标 → 世界米偏移（相对世界原点，pointy-top 平铺）。
+     * 六边形中心距格间距 = hexSide * sqrt(3)，行距 = hexSide * 1.5。
+     */
+    fun axialToWorldMeters(c: Axial, hexSide: Double): Pair<Double, Double> {
+        val x = hexSide * (c.q * 1.5 + c.r * 0.75)
+        val y = hexSide * (c.r * sqrt(3.0) / 2.0)
+        return x to y
     }
+
+    /**
+     * 世界米偏移 → 最近轴向坐标（[axialToWorldMeters] 的逆，供外部回查格子归属）。
+     */
+    fun worldMetersToAxial(xM: Double, yM: Double, hexSide: Double): Axial {
+        // pointy-top 反解（红康 formula region），取最近格子
+        val r = (yM / (hexSide * sqrt(3.0) / 2.0)).roundToInt()
+        val q = ((xM / hexSide) - 0.75 * r).roundToInt()
+        return Axial(q, r)
+    }
+
+    /**
+     * 世界经纬度 → 最近轴向坐标（以世界原点 + 格大小为锚，反向求格子归属）。
+     * [latLngToAxial] 是 [axialToLatLng] 的逆，两者一致 → 格子钉死在地球坐标。
+     */
+    fun latLngToAxial(
+        lat: Double, lng: Double,
+        worldOriginLat: Double, worldOriginLng: Double,
+        hexSideMeters: Double,
+    ): Axial {
+        val latPerMeter = 1.0 / 111_320.0
+        val lngPerMeter = 1.0 / (111_320.0 * kotlin.math.cos(Math.toRadians(worldOriginLat)).coerceAtLeast(0.01))
+        val xM = (lng - worldOriginLng) / lngPerMeter
+        val yM = -(lat - worldOriginLat) / latPerMeter
+        return worldMetersToAxial(xM, yM, hexSideMeters)
+    }
+
+    /** 轴向坐标 → 世界经纬度（[latLngToAxial] 的逆）。格子中心经纬度。 */
+    fun axialToLatLng(
+        c: Axial,
+        worldOriginLat: Double, worldOriginLng: Double,
+        hexSideMeters: Double,
+    ): Pair<Double, Double> {
+        val (xM, yM) = axialToWorldMeters(c, hexSideMeters)
+        val latPerMeter = 1.0 / 111_320.0
+        val lngPerMeter = 1.0 / (111_320.0 * kotlin.math.cos(Math.toRadians(worldOriginLat)).coerceAtLeast(0.01))
+        val lat = worldOriginLat - yM * latPerMeter
+        val lng = worldOriginLng + xM * lngPerMeter
+        return lat to lng
+    }
+
+    /**
+     * 屏幕像素 → 世界米（相对屏幕中心），供 UI 把点击像素转成世界坐标，再回查格子。
+     */
+    fun pixelToWorldMeters(pxX: Double, pxY: Double, metersPerPixel: Double): Pair<Double, Double> =
+        (pxX * metersPerPixel) to (pxY * metersPerPixel)
 
     private val DIRECTIONS = listOf(
         Axial(1, 0), Axial(1, -1), Axial(0, -1),

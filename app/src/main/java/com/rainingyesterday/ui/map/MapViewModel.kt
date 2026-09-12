@@ -43,6 +43,17 @@ data class MapUiState(
     val track: List<TrackPoint> = emptyList(),
     val pendingAutoTrigger: Boolean = false,
     val center: CenterIntent? = null,
+    /** 瓦片底图源 */
+    val tileSource: com.rainingyesterday.domain.model.TileSource = com.rainingyesterday.domain.model.TileSource.OSM_MAPNIK,
+    /** 迷雾世界原点（格子的 (q=0,r=0) 对应的经纬度），绘制时把轴向转成世界坐标用 */
+    val fogOriginLat: Double = 0.0,
+    val fogOriginLng: Double = 0.0,
+    /** 迷雾六边形边长（米），决定格子大小与坐标换算 */
+    val fogHexSideMeters: Double = 20.0,
+    /** 天地图 API key */
+    val tiandituKey: String = "",
+    /** 自定义瓦片 URL */
+    val customTileUrl: String = "",
 )
 
 /** 地图中心意图（把相机位置意图传给 UI）。 */
@@ -106,8 +117,12 @@ class MapViewModel @Inject constructor(
         trk: List<TrackPoint>,
         loc: UserLocation?,
     ): MapUiState {
+        // 始终读最新存档里的设置（设置页改了瓦片/迷雾/定位后地图同步生效）
+        val live = save.settings()
         currentLocation = loc
-        val posHex = loc?.let { fog.hexAxialAt(it.lat, it.lng, HexGrid.Axial(0, 0), it.lat, it.lng) }
+        val posHex = loc?.let {
+            fog.hexAxialAt(it.lat, it.lng, HexGrid.Axial(0, 0), WORLD_ORIGIN_LAT, WORLD_ORIGIN_LNG)
+        }
         val player = PlayerProgress(
             exploration = save.exploration(),
             lat = loc?.lat,
@@ -136,8 +151,8 @@ class MapViewModel @Inject constructor(
 
         return MapUiState(
             location = loc,
-            locationMode = s.locationMode,
-            fogVisible = s.isLayerVisible(MapLayer.FOG),
+            locationMode = live.locationMode,
+            fogVisible = live.isLayerVisible(MapLayer.FOG),
             currentHex = posHex?.key,
             exploredKeys = merged,
             places = content.places(),
@@ -145,6 +160,12 @@ class MapViewModel @Inject constructor(
             track = trk,
             pendingAutoTrigger = loc != null && newly.isNotEmpty(),
             center = loc?.let { CenterIntent(it.lat, it.lng) },
+            tileSource = live.tileSource,
+            fogOriginLat = WORLD_ORIGIN_LAT,
+            fogOriginLng = WORLD_ORIGIN_LNG,
+            fogHexSideMeters = live.hexSideMeters,
+            tiandituKey = live.tiandituKey,
+            customTileUrl = live.customTileUrl,
         )
     }
 
@@ -164,11 +185,30 @@ class MapViewModel @Inject constructor(
         settings.update { it.withLayer(MapLayer.FOG, !it.isLayerVisible(MapLayer.FOG)) }
     }
 
+    /** 设置瓦片底图源（从设置页调用），持久化。 */
+    fun setTileSource(source: com.rainingyesterday.domain.model.TileSource) {
+        settings.update { it.copy(tileSource = source) }
+        save.saveSettings(settings.value.copy(tileSource = source))
+    }
+
+    /** 在模式间循环切换（演示/手动模拟用）。 */
+    fun cycleLocationMode() {
+        val next = when (settings.value.locationMode) {
+            LocationMode.DISABLE -> LocationMode.FOREGROUND
+            LocationMode.FOREGROUND -> LocationMode.DISABLE
+            LocationMode.BACKGROUND -> LocationMode.DISABLE
+        }
+        setLocationMode(next)
+    }
+
     private fun startLocation(mode: LocationMode) {
         activeLocation(mode).start()
     }
 
     private companion object {
+        /** 迷雾网格的世界固定原点（本次用校园一处坐标），保证 hex 绝对坐标稳定 */
+        const val WORLD_ORIGIN_LAT = 39.992
+        const val WORLD_ORIGIN_LNG = 116.312
         const val TRACK_MIN_GAP_M = 15.0
     }
 }

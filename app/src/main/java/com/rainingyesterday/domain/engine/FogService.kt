@@ -6,7 +6,6 @@ import com.rainingyesterday.domain.model.Place
 import com.rainingyesterday.domain.model.PlayerProgress
 import com.rainingyesterday.domain.model.PlayerSettings
 import com.rainingyesterday.domain.repository.ContentRepository
-import kotlin.math.roundToInt
 
 /**
  * 迷雾解锁逻辑（docs/03 §4.2、GDD 7.1）。
@@ -40,30 +39,19 @@ class FogService(
         return revealed
     }
 
-    /** 由真实经纬度换算玩家所属轴向格子（把玩家位置投到网格上）。 */
+    /** 由真实经纬度换算玩家所属轴向格子（委托 HexGrid：与绘制用同一套逆变换，格子钉死在地球坐标）。 */
     fun hexAxialAt(
         lat: Double,
         lng: Double,
         origin: HexGrid.Axial,
         originLat: Double,
         originLng: Double,
-    ): HexGrid.Axial {
-        val latPerMeter = 1.0 / 111_320.0
-        val lngPerMeter = 1.0 / (111_320.0 * kotlin.math.cos(Math.toRadians(originLat)).coerceAtLeast(0.01))
-        val dy = (originLat - lat) / latPerMeter
-        val dx = (lng - originLng) / lngPerMeter
-        val step = settings.hexSideMeters
-        return HexGrid.Axial(
-            (origin.q + (dx / (step * THREE_HALF)).roundToInt()),
-            (origin.r + (-dy / (step * SQRT3_HALF)).roundToInt()),
-        )
-    }
+    ): HexGrid.Axial =
+        HexGrid.latLngToAxial(lat, lng, originLat, originLng, settings.hexSideMeters)
 
     private companion object {
         const val HISTORY_THRESHOLD = 0.3
         const val RUMOR_THRESHOLD = 0.6
         const val ANOMALY_THRESHOLD = 0.8
-        const val THREE_HALF = 3.0 / 2.0
-        const val SQRT3_HALF = 1.7320508075688772 / 2.0
     }
 }
