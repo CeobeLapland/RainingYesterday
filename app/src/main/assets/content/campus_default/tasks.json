@@ -1,0 +1,35 @@
+[
+  {
+    "id": "tutorial_visit_hall",
+    "name": "参观旧礼堂",
+    "type": "normal",
+    "source": "world",
+    "objectives": [
+      { "kind": "visit", "place": "old_hall", "count": 1 }
+    ],
+    "rewards": {
+      "exploration": 5,
+      "commemorative": 2
+    }
+  },
+  {
+    "id": "anomaly_old_hall_night",
+    "name": "旧礼堂的夜声",
+    "type": "anomaly",
+    "source": "rumor:gym_night_sound",
+    "unlock": [
+      { "kind": "time_range", "value": { "from": "21:50", "to": "23:00" } },
+      { "kind": "exploration", "value": { "min": 0.6 } }
+    ],
+    "objectives": [
+      { "kind": "visit", "place": "old_hall" }
+    ],
+    "allow_empty": true,
+    "rewards": {
+      "exploration": 10,
+      "commemorative": 5,
+      "reputation": 3,
+      "unlock_history": "old_hall"
+    }
+  }
+]

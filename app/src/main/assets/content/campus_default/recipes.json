@@ -1,0 +1,13 @@
+[
+  {
+    "id": "mushroom_brew",
+    "name": "菌酿",
+    "machine": "brew_keg",
+    "inputs": { "rain_mushroom": 2 },
+    "output": { "item": "mushroom_brew", "count": 1 },
+    "duration_hours": 8,
+    "condition": [
+      { "kind": "weather", "value": "rain" }
+    ]
+  }
+]

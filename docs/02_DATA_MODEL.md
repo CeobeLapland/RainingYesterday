@@ -205,7 +205,8 @@
     "events": "events.json",
     "rumors": "rumors.json",
     "rituals": "rituals.json",
-    "festivals": "festivals.json"
+    "festivals": "festivals.json",
+    "tools": "tools.json"
   }
 }
 ```
@@ -273,6 +274,48 @@ CampusSignal     { events: [ { id, text, place? } ] }    // 校园动态，可�
 
 外部获取失败由数据层降级到本地模拟，绝不中断游戏（见 `03` §6）。
 
+### 2.13 地点微仪式 · festival（新增，GDD 7.22 节日）
+
+校园真实节点（开学、樱花季、银杏季、毕业季），作为周期性事件注入限定资源 / NPC 聚集 / 限定内容，由人工维护。
+
+```jsonc
+{
+  "id": "sakura_season",
+  "name": "樱花季",
+  "start": { "month": 3, "day": 20 },
+  "end": { "month": 4, "day": 10 },
+  "conditions": [],                  // 额外的周期/年份限定（可选，多数留空）
+  "resource_bonuses": ["ginkgo_leaf"], // 期间可采集/出现的限定资源
+  "npc_gathering": ["librarian_lin"],  // 周年聚集的 NPC
+  "limited_content": ["rare_paint"],   // 限定内容（物品/任务 filtered unknowable here, data置顶）
+  "text": "校园樱花开了，树下游人如织。"
+}
+```
+
+### 2.14 工具升级线 · tool（新增，GDD 7.10）
+
+工具是探索的"效率成长线"，用探索材料升级，反哺探索效率。工具本身是内容（哪几把、升级档位、材料需求、效果），玩家当前的工具等级存 Room（见 §3 备注）。
+
+```jsonc
+{
+  "id": "map_detector",
+  "name": "地图探测器",
+  "tiers": [
+    { "level": 1, "name": "初代探测器", "effect": { "fog_radius_m": 15 } },
+    { "level": 2, "name": "改良探测器", "effect": { "fog_radius_m": 25 }, "cost": { "copper": 3 } },
+    { "level": 3, "name": "高精度探测器", "effect": { "fog_radius_m": 40 }, "cost": { "iron": 2, "copper": 5 } }
+  ]
+}
+```
+
+`effect` 采用可扩展的键值对结构（`fog_radius_m`、`collect_capacity`、`fish_eff` 等），由领域引擎按需读取，不做死 schema；`cost` 为 required 物品（缩略），完整版可为 `{ itemId: count }`。
+
+> 工具升级状态存 Room `ToolState { toolId, level }`（见 §3），不复制内容字段。
+
+### 2.15 新增内容类型占位说明（festival / tool）
+
+> 编辑提示：`tool` 与 `festival` 为 v2 新增内容类型。若主题 JSON 缺这两个文件，ContentRepository 应优雅跳过（`files` 不强制全部存在），保证旧主题包兼容。
+
 ## 3. 玩家存档 Room 实体
 
 | 实体 | 关键字段 | 说明 |
@@ -289,6 +332,7 @@ CampusSignal     { events: [ { id, text, place? } ] }    // 校园动态，可�
 | `PetState` | creatureId, affinity | 宠物 / 友善生灵 |
 | `BuildSlot` | x, y, machineId | 我的空间布局 |
 | `PlayerSettings` | showOthers, locationMode, npcApi... | 单机/多人及定位等 |
+| `ToolState` | toolId, level | 工具升级线当前等级（2.14） |
 
 所有 `refId` 指向世界内容 JSON 的 `id`，存档本身不复制内容字段。
 

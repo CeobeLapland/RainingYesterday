@@ -1,0 +1,15 @@
+[
+  {
+    "id": "cat_follow",
+    "name": "跟着你的猫",
+    "tier": "rare",
+    "trigger": [
+      { "kind": "near", "value": { "place": "library", "radius_m": 100 } }
+    ],
+    "effects": [
+      { "kind": "unlock_place", "place": "lake_side" },
+      { "kind": "gain_item", "item": "dried_fish", "count": 1 }
+    ],
+    "text": "一只猫跟了你一段路。"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "guard_li",
+    "name": "李叔",
+    "role": "老门卫",
+    "home": "old_hall",
+    "schedule": [
+      { "from": "07:30", "to": "12:00", "place": "old_hall", "chance": 0.9 },
+      { "from": "12:00", "to": "13:00", "place": "lake_side", "chance": 1.0 }
+    ],
+    "dialogue": [
+      { "min_familiarity": 0, "lines": ["晚上好。", "又见面了。"] },
+      { "min_familiarity": 3, "lines": ["你知道这片操场以前是什么吗？"] }
+    ],
+    "gifts": { "liked": ["tea"], "disliked": ["junk"] },
+    "api": { "enabled": false, "base_url": "", "model": "" },
+    "ar": {
+      "asset": "npc_guard_li",
+      "anchor_mode": "geo_anchor",
+      "lat": 31.2000,
+      "lng": 121.4000
+    }
+  },
+  {
+    "id": "librarian_lin",
+    "name": "林老师",
+    "role": "图书馆管理员",
+    "home": "library",
+    "schedule": [
+      { "from": "09:00", "to": "17:00", "place": "library", "chance": 1.0 }
+    ],
+    "dialogue": [
+      { "min_familiarity": 0, "lines": ["记得保持安静。"] }
+    ],
+    "gifts": { "liked": ["old_book"] },
+    "api": { "enabled": false, "base_url": "", "model": "" }
+  }
+]

@@ -1,0 +1,77 @@
+[
+  {
+    "id": "rain_mushroom",
+    "name": "雨夜菌",
+    "category": "material",
+    "rarity": "rare",
+    "spawn_places": ["old_hall", "lake_side"],
+    "spawn_condition": [
+      { "kind": "weather", "value": "rain" },
+      { "kind": "time_range", "value": { "from": "18:00", "to": "23:00" } }
+    ],
+    "used_in": ["mushroom_brew"],
+    "ar": {}
+  },
+  {
+    "id": "reeds",
+    "name": "芦苇",
+    "category": "material",
+    "rarity": "common",
+    "spawn_places": ["lake_side"]
+  },
+  {
+    "id": "dry_leaves",
+    "name": "干树叶",
+    "category": "material",
+    "rarity": "common",
+    "spawn_places": ["library"]
+  },
+  {
+    "id": "ginkgo_leaf",
+    "name": "银杏叶",
+    "category": "culture",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "tea",
+    "name": "茶叶",
+    "category": "knowledge",
+    "rarity": "common"
+  },
+  {
+    "id": "junk",
+    "name": "杂物",
+    "category": "material",
+    "rarity": "common"
+  },
+  {
+    "id": "old_book",
+    "name": "旧书",
+    "category": "knowledge",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "mushroom_brew",
+    "name": "菌酿",
+    "category": "culture",
+    "rarity": "rare"
+  },
+  {
+    "id": "dried_fish",
+    "name": "小鱼干",
+    "category": "material",
+    "rarity": "common"
+  },
+  {
+    "id": "sound_recorder",
+    "name": "录音笔",
+    "category": "material",
+    "rarity": "common"
+  },
+  {
+    "id": "gym_night_sound_photo",
+    "name": "夜声照片",
+    "category": "memory",
+    "rarity": "rare"
+  }
+]

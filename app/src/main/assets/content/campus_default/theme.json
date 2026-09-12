@@ -1,0 +1,18 @@
+{
+  "id": "campus_default",
+  "name": "默认校园",
+  "version": 1,
+  "files": {
+    "places": "places.json",
+    "npcs": "npcs.json",
+    "creatures": "creatures.json",
+    "tasks": "tasks.json",
+    "items": "items.json",
+    "recipes": "recipes.json",
+    "events": "events.json",
+    "rumors": "rumors.json",
+    "rituals": "rituals.json",
+    "festivals": "festivals.json",
+    "tools": "tools.json"
+  }
+}

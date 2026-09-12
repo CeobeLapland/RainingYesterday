@@ -1,0 +1,13 @@
+[
+  {
+    "id": "sakura_season",
+    "name": "樱花季",
+    "start": { "month": 3, "day": 20 },
+    "end": { "month": 4, "day": 10 },
+    "conditions": [],
+    "resource_bonuses": ["ginkgo_leaf"],
+    "npc_gathering": ["librarian_lin"],
+    "limited_content": [],
+    "text": "校园樱花开了，树下游人如织。"
+  }
+]

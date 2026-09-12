@@ -1,0 +1,11 @@
+[
+  {
+    "id": "map_detector",
+    "name": "地图探测器",
+    "tiers": [
+      { "level": 1, "name": "初代探测器", "effect": { "fog_radius_m": 15.0 } },
+      { "level": 2, "name": "改良探测器", "effect": { "fog_radius_m": 25.0 }, "cost": { "reeds": 3 } },
+      { "level": 3, "name": "高精度探测器", "effect": { "fog_radius_m": 40.0 }, "cost": { "reeds": 2, "dry_leaves": 5 } }
+    ]
+  }
+]

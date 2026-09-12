@@ -1,0 +1,13 @@
+[
+  {
+    "id": "sit_by_lake",
+    "name": "在湖边坐一会儿",
+    "place": "lake_side",
+    "action": "sit",
+    "cooldown_days": 0,
+    "effects": [
+      { "kind": "create_memory", "text": "在湖边坐了一会儿。" },
+      { "kind": "gain_item", "item": "ginkgo_leaf", "count": 1 }
+    ]
+  }
+]

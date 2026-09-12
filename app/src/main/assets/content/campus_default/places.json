@@ -1,0 +1,48 @@
+[
+  {
+    "id": "old_hall",
+    "name": "旧礼堂",
+    "type": "building",
+    "lat": 31.2000,
+    "lng": 121.4000,
+    "radius_m": 40,
+    "built_year": 1987,
+    "former_name": "老礼堂",
+    "history": [
+      "这座礼堂建于 1987 年。",
+      "2019 年经历过最后一次翻修。"
+    ],
+    "resources": ["rain_mushroom"],
+    "linked_npcs": ["guard_li"],
+    "linked_rumors": ["gym_night_sound"],
+    "tags": ["深夜", "怀旧"],
+    "ar": {
+      "asset": "old_hall_past",
+      "anchor_mode": "device_relative",
+      "billboard": true
+    }
+  },
+  {
+    "id": "lake_side",
+    "name": "湖边",
+    "type": "nature",
+    "lat": 31.2010,
+    "lng": 121.4020,
+    "radius_m": 60,
+    "resources": ["reeds"],
+    "linked_npcs": ["guard_li"],
+    "tags": ["安静", "水域"]
+  },
+  {
+    "id": "library",
+    "name": "图书馆",
+    "type": "public",
+    "lat": 31.1995,
+    "lng": 121.4010,
+    "radius_m": 50,
+    "built_year": 2001,
+    "linked_npcs": ["librarian_lin"],
+    "resources": ["dry_leaves"],
+    "tags": ["学习", "躲雨"]
+  }
+]

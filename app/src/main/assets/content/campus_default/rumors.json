@@ -1,0 +1,14 @@
+[
+  {
+    "id": "gym_night_sound",
+    "name": "体育馆夜声",
+    "text": "有人说，晚上十点后旧体育馆附近会听见奇怪声音。",
+    "condition": [
+      { "kind": "time_range", "value": { "from": "21:50", "to": "23:00" } },
+      { "kind": "near", "value": { "place": "old_hall", "radius_m": 120 } }
+    ],
+    "resolve": "anomaly:anomaly_old_hall_night",
+    "may_fail": true,
+    "evidence": "gym_night_sound_photo"
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "campus_cat",
+    "name": "橘猫",
+    "species": "cat",
+    "home_places": ["library", "lake_side"],
+    "rarity": "uncommon",
+    "found_condition": [
+      { "kind": "time_range", "value": { "from": "17:00", "to": "19:00" } }
+    ],
+    "gifts": { "liked": ["dried_fish"] },
+    "ar": {
+      "asset": "creature_cat",
+      "anchor_mode": "device_relative",
+      "billboard": true
+    }
+  }
+]
