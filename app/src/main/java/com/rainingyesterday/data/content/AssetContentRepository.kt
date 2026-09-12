@@ -26,8 +26,8 @@ import javax.inject.Singleton
 @Singleton
 class AssetContentRepository @Inject constructor(
     private val context: Context,
-    private val parser: JsonWorldContentParser = JsonWorldContentParser(),
-    private val validator: ContentValidator = ContentValidator(),
+    private val parser: JsonWorldContentParser,
+    private val validator: ContentValidator,
 ) : ContentRepository {
 
     private val themeId = "campus_default"

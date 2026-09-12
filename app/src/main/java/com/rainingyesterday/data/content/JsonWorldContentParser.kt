@@ -15,6 +15,8 @@ import com.rainingyesterday.domain.model.Tool
 import com.rainingyesterday.domain.model.WorldContent
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * 把一整套内容文件解析成 [WorldContent]。
@@ -27,9 +29,10 @@ import kotlinx.serialization.decodeFromString
  * - files 未列出的类型不强求存在，缺省即空列表（优雅跳过，兼容旧主题包）。
  * - 解析失败抛出 [SerializationException]（含主题包与文件信息），启动时显式报错。
  */
-class JsonWorldContentParser(
-    private val json: kotlinx.serialization.json.Json = ContentJson,
-) {
+@Singleton
+class JsonWorldContentParser @Inject constructor() {
+
+    private val json = ContentJson
 
     /** 载入主题包：读 theme.json 入口，按其 files 映射解析各内容文件。 */
     fun parse(files: Map<String, String>): WorldContent {

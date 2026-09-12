@@ -1,13 +1,16 @@
 package com.rainingyesterday.data.content
 
 import com.rainingyesterday.domain.model.WorldContent
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * 世界内容的合法性校验（docs/04 §4.2）。
  * 内容载入后做一次校验：id 唯一、跨文件引用存在、类型合法。
  * 坏数据在启动时显式报错（[IllegalStateException]），绝不默默吞掉。
  */
-class ContentValidator {
+@Singleton
+class ContentValidator @Inject constructor() {
 
     fun validate(content: WorldContent) {
         val errors = mutableListOf<String>()

@@ -3,10 +3,15 @@
 
     <!--
       权限清单见 docs/03_TECH_STACK.md §8。
-      定位（M3）、相机（M5）、后台定位（后补）权限在对应里程碑启用时再添加。
+      定位（M3）、相机（M5）、后台定位（后补）权限随里程碑启用。
     -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- osmdroid 离线瓦片缓存写入要求 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <application
         android:name=".RainingYesterdayApp"
@@ -14,6 +19,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.RainingYesterday">
 
         <activity

@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.lifecycle.runtime.compose)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.osmdroid.android)
 
     // 测试
     testImplementation(libs.junit)
